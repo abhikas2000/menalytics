@@ -21,6 +21,8 @@ def create_app():
     db.init_app(app)
     print("DB Initialized Successfully")
 
+    CORS(app)
+
     with app.app_context():
         db.drop_all()
         db.create_all()
