@@ -83,6 +83,31 @@ def create_app():
             db.session.commit()
             return jsonify(msg="New item added successfully")
 #-----------------------------------------------------------------------------------
+        @app.route("/show_menu",methods=['GET'])
+        def show_menu():
+            avail_foods=FoodItems.query.filter_by(availability=True).all()
+            items=[]
+            for food in avail_foods:
+                items.append({
+                    'f_name':food.f_name,
+                    'price':food.price,
+                    'rating':food.rating,
+                })
+            return jsonify(available_items=items)
+#-------------------------------------------------------------------------------------
+        @app.route("/giving_rating",methods=["POST"])
+        def giving_rating():
+            data=request.get_json()
+            new_rating=UserRating(
+                o_id=data['o_id']
+                rating=data['rating']
+            )
+            db.session.add(new_rating)
+            f_id=Order.query.filter_by(o_id=data['o_id']).first().f_id
+            fooditem=FoodItems.query.filter_by(f_id=f_id).first()
+            new_ordercount=fooditem.ordercount+1
+            new_rating=((fooditem.rating*fooditem.ordercount)+data['rating'])/new_ordercount
+            FoodItems.query.filter_by(f_id=f_id).update({rating:new_rating})
 
         # db.drop_all()
         db.create_all()
