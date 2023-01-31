@@ -82,6 +82,7 @@ def create_app():
             db.session.add(new_food)
             db.session.commit()
             return jsonify(msg="New item added successfully")
+#-----------------------------------------------------------------------------------
 
         # db.drop_all()
         db.create_all()
