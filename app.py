@@ -282,10 +282,12 @@ def create_app():
                 orders=[]
                 for order in actv_orders:
                     orders.append({
-                        "order_id":order.id,
+                        "order_id":order.o_id,
                         "item_name":FoodItems.query.filter_by(f_id=order.f_id).first().f_name,
                         "quantity":order.quantity
                     })
+                
+                return jsonify(active_orders=orders)
 
 
 
