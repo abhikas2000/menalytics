@@ -43,7 +43,7 @@ def create_app():
                 return jsonify(user_token=res.c_id)
             else:
                 return jsonify(user_token=res.c_id)
-#----------------------------------------------------------------------------------        
+#-------------------------------------------------------------------------------     
         @app.route("/placing_order",methods=["POST"])
         def placing_order():
             c_id=request.args['c_id']
@@ -84,7 +84,7 @@ def create_app():
             db.session.add(new_food)
             db.session.commit()
             return jsonify(msg="New item added successfully")
-#-----------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
         @app.route("/show_menu",methods=['GET'])
         def show_menu():
             avail_foods=FoodItems.query.filter_by(availability=True).all()
@@ -99,7 +99,7 @@ def create_app():
                         'rating':food.rating,
                     })
                 return jsonify(available_items=items)
-#-------------------------------------------------------------------------------------
+#-------------------------------------------------------------------------------
         @app.route("/giving_rating",methods=["POST"])
         def giving_rating():
             data=request.get_json()
@@ -119,7 +119,7 @@ def create_app():
             db.session.commit()
 
             return jsonify(msg="Rating updated successfully")
-#------------------------------------------------------------------------------------------------
+#--------------------------------------------------------------------------------
         @app.route("/change_item_price",methods=["POST"])
         def change_item_price():
             data=request.get_json()
@@ -128,7 +128,7 @@ def create_app():
 
             db.session.commit()
             return jsonify(msg="Price changed succesfully")
-#-------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
         @app.route('/change_availability',methods=['POST'])
         def change_availability():
             data=request.get_json()
@@ -140,7 +140,7 @@ def create_app():
 
             db.session.commit()
             return jsonify(msg="Availability changed succesfully")
-#--------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
         @app.route('/order_history',methods=['GET'])
         def order_history():
             c_id=int(request.args['c_id'])
@@ -158,7 +158,7 @@ def create_app():
                     }
                     order_history[order.date].append(order_details)
                 return jsonify(order_history=order_history)
-#-----------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
         @app.route('/filter_by_price',methods=['GET'])
         def filter_by_price():
             price=int(request.args['price'])
@@ -178,7 +178,23 @@ def create_app():
                     return jsonify(msg=f"No item available below {price}")
                 else:
                     return jsonify(avail_items=items)
-#----------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------
+        @app.route('/most_ordered',methods=['GET'])
+        def most_ordered():
+            items=FoodItems.query.order_by(FoodItems.ordercount.desc()).limit(5).all()
+            if items==None:
+                return jsonify(msg="No item available")
+            else:
+                top_items=[]
+                for item in items:
+                    top_items.append({
+                        'f_name':item.f_name,
+                        'price':item.price,
+                        'rating':item.rating
+                    })
+                return jsonify(most_ordered_items=top_items)
+#-------------------------------------------------------------------------------------                
+
         # db.drop_all()
         db.create_all()
         db.session.commit()
