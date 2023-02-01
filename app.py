@@ -99,15 +99,23 @@ def create_app():
         def giving_rating():
             data=request.get_json()
             new_rating=UserRating(
-                o_id=data['o_id']
+                o_id=data['o_id'],
                 rating=data['rating']
             )
             db.session.add(new_rating)
             f_id=Order.query.filter_by(o_id=data['o_id']).first().f_id
             fooditem=FoodItems.query.filter_by(f_id=f_id).first()
-            new_ordercount=fooditem.ordercount+1
-            new_rating=((fooditem.rating*fooditem.ordercount)+data['rating'])/new_ordercount
-            FoodItems.query.filter_by(f_id=f_id).update({rating:new_rating})
+            
+            old_ordercount=fooditem.ordercount
+            fooditem.ordercount+=1
+            new_ordercount=fooditem.ordercount
+
+            fooditem.rating=((fooditem.rating*old_ordercount)+data['rating'])/new_ordercount
+            db.session.commit()
+
+            return jsonify(msg="Rating updated successfully")
+            
+
 
         # db.drop_all()
         db.create_all()
