@@ -53,6 +53,7 @@ def create_app():
             for order in data['orders']:
                 f_name=order['f_name']
                 item=FoodItems.query.filter_by(f_name=f_name).first()
+                item.ordercount+=1
                 total_price+=(item.price*order['quantity'])
                 
                 new_order=Order(
@@ -77,6 +78,7 @@ def create_app():
                 f_name=food['f_name'],
                 rating=0,
                 ordercount=0,
+                ratingcount=0,
                 availability=True
             )
             db.session.add(new_food)
@@ -86,14 +88,17 @@ def create_app():
         @app.route("/show_menu",methods=['GET'])
         def show_menu():
             avail_foods=FoodItems.query.filter_by(availability=True).all()
-            items=[]
-            for food in avail_foods:
-                items.append({
-                    'f_name':food.f_name,
-                    'price':food.price,
-                    'rating':food.rating,
-                })
-            return jsonify(available_items=items)
+            if avail_foods==None:
+                return jsonify(msg="No item available")
+            else:    
+                items=[]
+                for food in avail_foods:
+                    items.append({
+                        'f_name':food.f_name,
+                        'price':food.price,
+                        'rating':food.rating,
+                    })
+                return jsonify(available_items=items)
 #-------------------------------------------------------------------------------------
         @app.route("/giving_rating",methods=["POST"])
         def giving_rating():
@@ -106,17 +111,74 @@ def create_app():
             f_id=Order.query.filter_by(o_id=data['o_id']).first().f_id
             fooditem=FoodItems.query.filter_by(f_id=f_id).first()
             
-            old_ordercount=fooditem.ordercount
-            fooditem.ordercount+=1
-            new_ordercount=fooditem.ordercount
+            old_ratingcount = fooditem.ratingcount
+            fooditem.ratingcount+=1
+            new_ratingcount = fooditem.ratingcount
 
-            fooditem.rating=((fooditem.rating*old_ordercount)+data['rating'])/new_ordercount
+            fooditem.rating = ((fooditem.rating*old_ratingcount)+data['rating'])/new_ratingcount
             db.session.commit()
 
             return jsonify(msg="Rating updated successfully")
-            
+#------------------------------------------------------------------------------------------------
+        @app.route("/change_item_price",methods=["POST"])
+        def change_item_price():
+            data=request.get_json()
+            item=FoodItems.query.filter_by(f_name=data['f_name']).first()
+            item.price=data['new_price']
 
+            db.session.commit()
+            return jsonify(msg="Price changed succesfully")
+#-------------------------------------------------------------------------------------------------
+        @app.route('/change_availability',methods=['POST'])
+        def change_availability():
+            data=request.get_json()
+            item=FoodItems.query.filter_by(f_name=data['f_name']).first()
+            if item.availability==True:
+                item.availability=False
+            else:
+                item.availability=True
 
+            db.session.commit()
+            return jsonify(msg="Availability changed succesfully")
+#--------------------------------------------------------------------------------------------------
+        @app.route('/order_history',methods=['GET'])
+        def order_history():
+            f_id=request.args['f_id']
+            orders=Order.query.order_by(Order.o_id.desc()).filter_by(f_id=f_id).all()
+            if orders==None:
+                jsonify(msg="No order history")
+            else:
+                order_history={}
+                for order in orders:
+                    if order.date not in order_history:
+                        order_history[order.date]=[]
+                    order_details={
+                        "item_name":FoodItems.query.filter_by(f_id=order.f_id).first().f_name(),
+                        "quantity": order.quantity
+                    }
+                    order_history[order.date].append(order_details)
+                return jsonify(order_history=order_history)
+#-----------------------------------------------------------------------------------------------------
+        @app.route('/filter_by_price',methods=['GET'])
+        def filter_by_price():
+            price=int(request.args['price'])
+            avail_foods=FoodItems.query.filter_by(availability=True).all()
+            if avail_foods==None:
+                return jsonify(msg="No item available")
+            else:    
+                items=[]
+                for food in avail_foods:
+                    if food.price<=price:
+                        items.append({
+                        'f_name':food.f_name,
+                        'price':food.price,
+                        'rating':food.rating,
+                    })
+                if items==[]:
+                    return jsonify(msg=f"No item available below {price}")
+                else:
+                    return jsonify(avail_items=items)
+#----------------------------------------------------------------------------------------------------------
         # db.drop_all()
         db.create_all()
         db.session.commit()
