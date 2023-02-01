@@ -183,6 +183,10 @@ def create_app():
         @app.route('/cancel_order', methods=['POST'])
         def cancel_order():
             o_id=int(request.args['o_id'])
+            try:
+                UserRating.query.filter_by(o_id=o_id).delete()
+            except:
+                pass
             Order.query.filter_by(o_id=o_id).delete()
 
             db.session.commit()
