@@ -291,11 +291,35 @@ def create_app():
             order=Order.query.filter_by(o_id=o_id).first()
             order.delivery_status=True
             db.session.commit()
+            return jsonify(msg="delivery status changed successfully")
 
 
 #------------------------------------------------------------------------------------
 
-        
+
+        @app.route('/todays_sell',methods=['GET'])
+        def todays_sell():
+            today=str(date.today())
+            todays_orders=Order.query.filter_by(date=today).all()
+            if todays_orders==None:
+                return jsonify(msg="today no sell till now")
+            else:
+                orders=[]
+                total_sell=0
+                for order in todays_orders:
+                    total_sell+=order.cost
+                    orders.append({
+                        "order_id":order.id,
+                        "item_name":FoodItems.query.filter_by(f_id=order.f_id).first().f_name,
+                        "quantity":order.quantity,
+                        "price":order.cost
+                    })
+
+                return jsonify(total_sell=total_sell,orders=orders)
+
+
+#--------------------------------------------------------------------------------------------
+                
 
         # db.drop_all()
         db.create_all()
