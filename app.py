@@ -143,8 +143,8 @@ def create_app():
 #--------------------------------------------------------------------------------------------------
         @app.route('/order_history',methods=['GET'])
         def order_history():
-            f_id=request.args['f_id']
-            orders=Order.query.order_by(Order.o_id.desc()).filter_by(f_id=f_id).all()
+            c_id=int(request.args['c_id'])
+            orders=Order.query.order_by(Order.o_id.desc()).filter_by(c_id=c_id).all()
             if orders==None:
                 jsonify(msg="No order history")
             else:
@@ -153,7 +153,7 @@ def create_app():
                     if order.date not in order_history:
                         order_history[order.date]=[]
                     order_details={
-                        "item_name":FoodItems.query.filter_by(f_id=order.f_id).first().f_name(),
+                        "item_name":FoodItems.query.filter_by(f_id=order.f_id).first().f_name,
                         "quantity": order.quantity
                     }
                     order_history[order.date].append(order_details)
