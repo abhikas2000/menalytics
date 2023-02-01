@@ -172,8 +172,11 @@ def create_app():
             orders=Order.query.filter_by(c_id=c_id).all()
             undelivered_order=[]
             for order in orders:
-                undelivered_order.append(order.o_id)
+                if order.delivery_status==False:
+                    undelivered_order.append(order.o_id)
             
+            if len(undelivered_order) == 0:
+                return jsonify(msg="No pending orders")
             return jsonify(order_ids=undelivered_order)
 
 
