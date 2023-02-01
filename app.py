@@ -61,7 +61,8 @@ def create_app():
                     quantity=order['quantity'],
                     cost=item.price*order['quantity'],
                     date=str(date.today()),
-                    c_id=c_id
+                    c_id=c_id,
+                    delivery_status=False
                 )
                 db.session.add(new_order)
                 db.session.commit()
@@ -194,6 +195,27 @@ def create_app():
                     })
                 return jsonify(most_ordered_items=top_items)
 #-------------------------------------------------------------------------------------                
+        @app.route('/change_delivery_status', methods=['POST'])
+        def change_delivery_status():
+            o_id=int(request.args['o_id'])
+            order=Order.query.filter_by(o_id=o_id).first()
+            order.delivery_status=True
+            db.session.commit()
+#-------------------------------------------------------------------------------------
+        @app.route('/cancel_order', methods=['POST'])
+        def cancel_order():
+            pass
+#-------------------------------------------------------------------------------------
+        @app.route('/undelivered_order', methods=['GET'])
+        def undelivered_order():
+            c_id=int(request.args['c_id'])
+            orders=Order.query.filter_by(c_id=c_id).all()
+            undelivered_order=[]
+            for order in orders:
+                undelivered_order.append(order.o_id)
+            
+            return jsonify(order_ids=undelivered_order)
+
 
         # db.drop_all()
         db.create_all()

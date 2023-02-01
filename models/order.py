@@ -8,4 +8,5 @@ class Order(db.Model):
     cost=db.Column(db.Integer,nullable=False)
     date=db.Column(db.String(150),nullable=False)
     c_id=db.Column(db.Integer,db.ForeignKey('customer_info.c_id'))
+    delivery_status=db.Column(db.Boolean,nullable=False)
     user_rating_oid=db.relationship('UserRating',backref='order')

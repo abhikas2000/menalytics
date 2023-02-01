@@ -13,6 +13,7 @@ Tables
         - Order cost
         - Date
         - customer id (foreign key)
+        - DeliveryStatus
         
     - UserRatings
         - Order id (primary & foreign key)
@@ -23,7 +24,8 @@ Tables
         - Item price
         - Item name
         - Item rating
-        - Number of times orderd
+        - RatingCount
+        - OrderdCount
         - Availability
 
 Endpoints
@@ -33,6 +35,7 @@ Endpoints
         - GivingRating
         - Signup/Login
         - OrderCancel
+        - MarkAsDelivered
         - TodaysMostOrdered
         - OrderHistory
     Owner
